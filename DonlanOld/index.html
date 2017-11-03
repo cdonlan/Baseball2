@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="rickshaw.min.css">
+    <script src="d3.min.js"></script>
+    <script src="d3.layout.min.js"></script>
+    <script src="rickshaw.min.js"></script>
+</head>
+
+<body>
+    <div id="chart"></div>
+    <script>
+        var HRs = []
+
+        d3.json("BaseballStats.json", function(data) {
+            //console.log(data);
+            data.forEach(function(d) {
+                item = {}
+                item["x"] = d.Year;
+                item["y"] = d.HomeRuns;
+                HRs.push(item);
+            });
+            console.log("HRs");
+            console.log(HRs);
+        });
+
+        var graph = new Rickshaw.Graph({
+            element: document.getElementById("#chart"),
+            width: 580,
+            height: 250,
+            series: [{
+                color: 'steelblue',
+                data: HRs
+            }]
+        });
+        graph.render();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Baseball Statistics</title>
+    <script src="d3.min.js" charset="utf-8"></script>
+	<script src="d3.windArrow.js" charset="utf-8"></script>
+	<script src="rickshaw.min.js" charset="utf-8"></script>
+	
+	<link rel="stylesheet" href="bootstrap.min.css">
+	
+    <style type="text/css">
+      text {
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 24px;
+      }
+	  
+	  td, th {
+		text-align: left;
+
+	  }
+	  
+	  select {
+			background: #272b30;
+			color:white;
+	  }
+</style> 
+</head>
+<body>
+	<div id="left" style="width: 65%; float: left; display: inline-block;">
+		<div id = "selectionBox" style="width: 50%; float: left; display: inline-block;">
+			<p>
+				Statistical Category:
+				<select id="selectCategory">
+				  <option value="ddAverageAge">Average Age</option>
+				  <option value="ddRunsPerGame">Runs Per Game</option>
+				  <option value="ddRuns">Runs</option>
+				  <option value="ddHits">Hits</option>
+				  <option value="ddDoubles">Doubles</option>
+				  <option value="ddTriples">Triples</option>
+				  <option value="ddHomeRuns">Home Runs</option>
+				  <option value="ddRunsBattedIn">Runs Batted In</option>
+				  <option value="ddStolenBases">Stolen Bases</option>
+				  <option value="ddWalks">Walks</option>
+				  <option value="ddStrikeOuts">Strike Outs</option>
+				  <option value="ddBattingAverage">Batting Average</option>
+				</select>
+				<br>
+				<br>
+				Graph Color:
+				<select id="graphColor">
+				  <option value="ddBlue">Blue</option>
+				  <option value="ddRed">Red</option>
+				  <option value="ddGreen">Green</option>
+				  <option value="ddOrange">Orange</option>
+				</select>
+				<br>
+				<br>
+				Graph Type:
+				<select id="graphType">
+				  <option value="ddLine">Line</option>
+				  <option value="ddBar">Bar</option>
+				  <option value="ddArea">Area</option>
+				</select>
+			</p>
+			<br>
+			<br>
+			<p> <button id="createBtn" onclick=renderVisual()>Create Graph!</button></p>
+		</div>
+		<div style="width: 50%; display: inline-block;"</div>
+			<br>
+			<br>
+			<div id="center" style="text-align: Center; width:33%; display: inline-block;">
+			<p> <text id="spot"></text></p>
+			<br>
+			<br>
+			<div id="graph" ></div>
+			</div>
+		</div>
+	</div>
+	
+	<div id = "right" style="width: 35%; display: inline-block;"</div>
+	<p> 
+		<div  style="text-align:Center;">
+			
+			<div style="display: inline-block;">
+				<table id="dataTable" style="visibility:hidden" class="table table-striped table-hover" >
+					<thead>
+						<tr class="info">
+							<th>Year</th>
+							<th id='secondHeader'></th>
+						</tr>
+					</thead>
+				</table>
+			</div>
+		</div>
+	</p>
+	<br>
+	<br>
+	<p>
+
+	
+	</p>
+
+      <script>
+	  
+	  
+        var ds;
+		var graphData = [];
+		  
+		function createGraph(data, startDate, endDate){
+		
+			//Get Color 
+			var colorSelection = document.getElementById('graphColor');
+			var SelectValue = colorSelection.options[colorSelection.selectedIndex].value;
+			var graphColor = SelectValue.replace('dd','');
+			
+			if(graphColor.toLowerCase() == 'blue'){
+			
+				graphColor = 'steelblue';
+				
+			}
+			
+			//Get Type
+			var typeSelection = document.getElementById('graphType');
+			var typeValue = typeSelection.options[typeSelection.selectedIndex].value;
+			var graphType = typeValue.replace('dd','').toLowerCase();
+			
+			document.getElementById('graph').innerHTML = "";
+				
+			//Create Data
+			var graph = new Rickshaw.Graph( {
+
+				element: document.querySelector("#graph"), 
+
+				width: 500, 
+
+				height: 300, 
+				
+				renderer: graphType,
+				
+				series: [{
+
+					color: graphColor,
+
+					data: JSON.parse(JSON.stringify(data))
+
+				}]
+
+			});
+
+			 
+
+			graph.render();  
+		}
+           
+           function loaddata()
+           {
+              d3.json("BaseballStats.json", function(error, data) {
+                  
+                  console.log("1.1");      
+                  //check the file loaded properly
+                  if (error) {  //is there an error?
+                      console.log(error);  //if so, log it to the console
+                  } else {      //If not we're golden!
+                      console.log("loaded");      
+                      ds = data; //put the data in the global var
+					  //console.log(ds);
+					  
+                  }
+                  
+                  
+              });  
+			  
+			  
+           }
+		   
+		  
+		   
+		   
+		  function createTable(index, category){
+			
+			
+				d3.select("#secondHeader")
+						.text(category);
+						
+				d3.selectAll('tbody').remove();
+				
+				//Create Table
+				var table = d3.select('table').append('tbody');
+				
+				d3.selectAll('tbody').attr('id', 'tableBody');
+				
+				d3.selectAll('table').attr('style', '');
+				
+				
+				var sampleCnt = 0;
+				
+				ds.forEach(function(index) {
+			
+					
+					var tr = table.selectAll('tr')
+					.data(ds).enter()
+					.append('tr');
+					
+					
+					tr.append('td')
+					.html(function(m) { return m.Year; });
+
+					if(category.toLowerCase() == 'average age'){
+						tr.append('td')
+						.html(function(m) { return m.AverageAge; });
+	
+					}
+					
+					if(category.toLowerCase() == 'runs per game'){
+						tr.append('td')
+						.html(function(m) { return m.RunsPerGame; });
+					}
+					
+					if(category.toLowerCase() == 'runs'){
+						tr.append('td')
+						.html(function(m) { return m.Runs; });
+					}
+					
+					//var attrName = 'arrow_'+ sampleCnt;
+					
+					if(category.toLowerCase() == 'hits'){
+						tr.append('td')
+						.html(function(m) { return m.Hits;})
+						//.attr('id', attrName);
+					}
+
+					if(category.toLowerCase() == 'doubles'){
+						tr.append('td')
+						.html(function(m) { return m.Doubles; });
+					}
+					
+					if(category.toLowerCase() == 'triples'){
+						tr.append('td')
+						.html(function(m) { return m.Triples; });
+					}
+					
+					if(category.toLowerCase() == 'home runs'){
+						tr.append('td')
+						.html(function(m) { return m.HomeRuns; });
+					}
+					
+					
+					if(category.toLowerCase() == 'runs batted in'){
+						tr.append('td')
+						.html(function(m) { return m.RunsBattedIn; });
+					}
+					
+					if(category.toLowerCase() == 'stolen bases'){
+						tr.append('td')
+						.html(function(m) { return m.Stolenbases; });
+					}
+					
+					if(category.toLowerCase() == 'walks'){
+						tr.append('td')
+						.html(function(m) { return m.Walks; });
+					}
+					
+					if(category.toLowerCase() == 'strike outs'){
+						tr.append('td')
+						.html(function(m) { return m.StrikeOuts; });
+					}
+					
+					if(category.toLowerCase() == 'batting average'){
+						tr.append('td')
+						.html(function(m) { return m.BattingAverage; });
+					}
+					
+
+					sampleCnt = sampleCnt + 1;
+				});
+				
+				
+				var rows = d3.selectAll('tr');
+				
+				var rowCnt = 0;
+				
+				rows.each(function(row){
+					
+					if(rowCnt > 0){
+					
+					
+						var yearSelect = this.__data__.Year;
+						
+						if(yearSelect > 2010){
+						
+							this.classList.add("danger");
+						
+						}
+						else if(yearSelect >= 1990 && yearSelect <= 2010){
+							
+							this.classList.add("warning");
+							
+						}
+						else if(yearSelect < 1990){
+							
+							this.classList.add("success");
+							
+						}
+					
+					}
+					
+					rowCnt = rowCnt + 1;
+					
+				});
+				
+			
+		  }
+		  
+          function renderVisual(){
+			
+				var dropDown = document.getElementById('selectCategory');
+				var SelectValue = dropDown.options[dropDown.selectedIndex].innerHTML;
+				var toGraphData = dropDown.options[dropDown.selectedIndex].value.replace('dd','');
+				d3.select("#spot")
+                  .text(SelectValue);
+				  
+				createTable(ds, SelectValue);
+				
+				graphData = [];
+				
+				d3.json("BaseballStats.json", function(data) {
+					counter = 1;
+					data.forEach(function(d) {
+					
+							item = {};
+							item["x"] = counter;
+							
+							if(SelectValue.toLowerCase() == 'average age'){
+							
+								item["y"] = d.AverageAge;
+		
+							}
+							
+							if(SelectValue.toLowerCase() == 'runs per game'){
+							
+								item["y"] = d.RunsPerGame;
+							}
+							
+							if(SelectValue.toLowerCase() == 'runs'){
+							
+								item["y"] = d.Runs;
+							}
+							
+							if(SelectValue.toLowerCase() == 'hits'){
+							
+								item["y"] = d.Hits;
+							}
+
+							if(SelectValue.toLowerCase() == 'doubles'){
+								
+								item["y"] = d.Doubles;
+							}
+							
+							if(SelectValue.toLowerCase() == 'triples'){
+								
+								item["y"] = d.Triples;
+							}
+							
+							if(SelectValue.toLowerCase() == 'home runs'){
+							
+								item["y"] = d.HomeRuns;
+							}
+							
+							
+							if(SelectValue.toLowerCase() == 'runs batted in'){
+								
+								item["y"] = d.RunsBattedIn;
+							}
+							
+							if(SelectValue.toLowerCase() == 'stolen bases'){
+							
+								item["y"] = d.Stolenbases;
+							}
+							
+							if(SelectValue.toLowerCase() == 'walks'){
+							
+								item["y"] = d.Walks;
+							}
+							
+							if(SelectValue.toLowerCase() == 'strike outs'){
+								
+								item["y"] = d.StrikeOuts;
+							}
+							
+							if(SelectValue.toLowerCase() == 'batting average'){
+							
+								item["y"] = d.BattingAverage;
+							}
+						
+							graphData.push(item);
+							counter = counter + 1;
+						});
+				console.log(graphData);
+				createGraph(graphData);
+					
+				});
+				
+				
+		  }
+            
+          
+          loaddata();
+    </script>
+</body>
+</html>
