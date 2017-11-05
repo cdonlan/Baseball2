@@ -1,12 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
     <title>Baseball Statistics</title>
     <script src="d3.min.js" charset="utf-8"></script>
 	<script src="d3.windArrow.js" charset="utf-8"></script>
 	<script src="rickshaw.min.js" charset="utf-8"></script>
-	
-	<link rel="stylesheet" href="bootstrap.min.css">
+	<link type="text/css" rel="stylesheet" href="graph.css">
+	<link type="text/css" rel="stylesheet" href="lines.css">
+	<!-- <link rel="stylesheet" href="bootstrap.min.css"> -->
 	
     <style type="text/css">
       text {
@@ -23,7 +24,25 @@
 			background: #272b30;
 			color:white;
 	  }
-</style> 
+
+		#graph {
+				position: relative;
+				left: 40px;
+				display: block;
+			}
+		#y_axis {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 40px;
+		}
+		#x_axis {
+			position: relative;
+			left: 40px;
+			height: 40px;
+		}
+	</style> 
+
 </head>
 <body>
 	<div id="left" style="width: 65%; float: left; display: inline-block;">
@@ -73,13 +92,12 @@
 			<p> <text id="spot"></text></p>
 			<br>
 			<br>
-			<div id="graph" ></div>
 			</div>
 		</div>
 	</div>
 	
-	<div id = "right" style="width: 35%; display: inline-block;"</div>
-	<p> 
+	<div id = "right" style="width: 35%; display: inline-block;"></div>
+
 		<div  style="text-align:Center;">
 			
 			<div style="display: inline-block;">
@@ -93,14 +111,11 @@
 				</table>
 			</div>
 		</div>
-	</p>
-	<br>
-	<br>
-	<p>
-
-	
-	</p>
-
+		<div id="chart_container">
+			<div id="y_axis"></div>
+			<div id="graph"></div>
+			<div id="x_axis"></div>
+		</div>
       <script>
 	  
 	  
@@ -126,13 +141,13 @@
 			var graphType = typeValue.replace('dd','').toLowerCase();
 			
 			document.getElementById('graph').innerHTML = "";
-				
+			console.log(data);
 			//Create Data
 			var graph = new Rickshaw.Graph( {
 
 				element: document.querySelector("#graph"), 
 
-				width: 500, 
+				width: 800, 
 
 				height: 300, 
 				
@@ -148,7 +163,29 @@
 
 			});
 
-			 
+			//Create x-axis formatter
+			var format = function(n) {
+			return n+2000;
+		}
+
+	
+			 //Create x-axis			
+			 var x_ticks = new Rickshaw.Graph.Axis.X( {
+				graph: graph,
+				orientation: 'bottom',
+				element: document.getElementById('x_axis'),
+				tickFormat: format
+				//pixelsPerTick: 200,
+				
+			} );
+
+			var y_ticks = new Rickshaw.Graph.Axis.Y( {
+				graph: graph,
+				orientation: 'left',
+				
+				element: document.getElementById('y_axis')
+			} );
+
 
 			graph.render();  
 		}
@@ -165,13 +202,9 @@
                       console.log("loaded");      
                       ds = data; //put the data in the global var
 					  //console.log(ds);
-					  
+
                   }
-                  
-                  
-              });  
-			  
-			  
+              });  			  
            }
 		   
 		  
@@ -320,12 +353,12 @@
 				d3.select("#spot")
                   .text(SelectValue);
 				  
-				createTable(ds, SelectValue);
+				//createTable(ds, SelectValue);
 				
 				graphData = [];
 				
 				d3.json("BaseballStats.json", function(data) {
-					counter = 1;
+					counter = 0;
 					data.forEach(function(d) {
 					
 							item = {};
