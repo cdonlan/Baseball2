@@ -141,6 +141,8 @@
 			var graphType = typeValue.replace('dd','').toLowerCase();
 			
 			document.getElementById('graph').innerHTML = "";
+			document.getElementById('y_axis').innerHTML = "";
+			document.getElementById('x_axis').innerHTML = "";
 			console.log(data);
 			//Create Data
 			var graph = new Rickshaw.Graph( {
