@@ -27,18 +27,18 @@
 
 		#graph {
 				position: relative;
-				left: 40px;
+				left: 100px;
 				display: block;
 			}
 		#y_axis {
 			position: absolute;
 			top: 0;
 			bottom: 0;
-			width: 40px;
+			width: 100px;
 		}
 		#x_axis {
 			position: relative;
-			left: 40px;
+			left: 100px;
 			height: 40px;
 		}
 	</style> 
@@ -85,7 +85,7 @@
 			<br>
 			<p> <button id="createBtn" onclick=renderVisual()>Create Graph!</button></p>
 		</div>
-		<div style="width: 50%; display: inline-block;"</div>
+		<div style="width: 50%; display: inline-block;"></div>
 			<br>
 			<br>
 			<div id="center" style="text-align: Center; width:33%; display: inline-block;">
@@ -122,7 +122,25 @@
         var ds;
 		var graphData = [];
 		  
-		function createGraph(data, startDate, endDate){
+		function getMax(arr, prop) {
+			var max;
+			for (var i=0 ; i<arr.length ; i++) {
+				if (!max || parseInt(arr[i][prop]) > parseInt(max[prop]))
+					max = arr[i];
+			}
+			return max;
+		}
+
+		function getMin(arr, prop) {
+			var min;
+			for (var i=0 ; i<arr.length ; i++) {
+				if (!min || parseInt(arr[i][prop]) < parseInt(min[prop]))
+					min = arr[i];
+			}
+			return min;
+		}
+
+		function createGraph(data){
 		
 			//Get Color 
 			var colorSelection = document.getElementById('graphColor');
@@ -144,25 +162,45 @@
 			document.getElementById('y_axis').innerHTML = "";
 			document.getElementById('x_axis').innerHTML = "";
 			console.log(data);
+
+			//Scale Data
+			var max = getMax(data,"y");
+			console.log("max is: " +max.y);
+
+			var min = getMin(data,"y");
+			console.log("min is: " +min.y);
+
+			var scaleFunc= d3.scale
+				.linear()
+				.domain([min.y,max.y]) //input min/max of sales values
+				.range([0,300]); //output pixels for SVG
+
+			// Test scaling
+			//console.log("scaled: " + scale(28.9));
+
+			var scaledData = [];
+			for(var i = 0; i < data.length; i++) {
+				var point = data[i];
+				// console.log("x is: " + point.x);
+				// console.log("y is:" + point.y);
+				scaledPoint = {};
+				scaledPoint["x"] = point.x;
+				scaledPoint["y"] = scaleFunc(point.y);
+				scaledData.push(scaledPoint);
+			}
+			//console.log(scaledData);
 			//Create Data
 			var graph = new Rickshaw.Graph( {
 
 				element: document.querySelector("#graph"), 
-
 				width: 800, 
-
 				height: 300, 
-				
 				renderer: graphType,
-				
 				series: [{
-
 					color: graphColor,
-
-					data: JSON.parse(JSON.stringify(data))
-
+					data: JSON.parse(JSON.stringify(data)),
+					scale:scaleFunc					
 				}]
-
 			});
 
 			//Create x-axis formatter
@@ -170,7 +208,6 @@
 			return n+2000;
 		}
 
-	
 			 //Create x-axis			
 			 var x_ticks = new Rickshaw.Graph.Axis.X( {
 				graph: graph,
@@ -181,11 +218,18 @@
 				
 			} );
 
+			var yAxisFormat = function(n) {
+				//console.log("N is: " +n)
+				var point = scaleFunc.invert(n);
+				//console.log("Scaled N is: " +foo);
+				return Math.round(point * 100) / 100;
+			}
+			
 			var y_ticks = new Rickshaw.Graph.Axis.Y( {
 				graph: graph,
-				orientation: 'left',
-				
-				element: document.getElementById('y_axis')
+				orientation: 'left',				
+				element: document.getElementById('y_axis'),
+				tickFormat: yAxisFormat
 			} );
 
 
@@ -203,8 +247,6 @@
                   } else {      //If not we're golden!
                       console.log("loaded");      
                       ds = data; //put the data in the global var
-					  //console.log(ds);
-
                   }
               });  			  
            }
@@ -365,11 +407,11 @@
 					
 							item = {};
 							item["x"] = counter;
+
 							
 							if(SelectValue.toLowerCase() == 'average age'){
 							
 								item["y"] = d.AverageAge;
-		
 							}
 							
 							if(SelectValue.toLowerCase() == 'runs per game'){
@@ -434,12 +476,9 @@
 				console.log(graphData);
 				createGraph(graphData);
 					
-				});
-				
-				
+				});				
 		  }
-            
-          
+
           loaddata();
     </script>
 </body>
